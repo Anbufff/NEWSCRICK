@@ -1,0 +1,344 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.9.0/dist/sweetalert2.min.js"></script>
+    <title>ANBU TTS - ElevenLabs</title>
+    <style>
+        /* 1. அடிப்படை தீம், பொதுவான ஸ்டைல்கள் */
+        body.main { 
+            background: #121212; 
+            color: #ffffff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0;
+        }
+        
+        /* முக்கிய கண்டெய்னர்கள் - இடைவெளி அதிகரிக்கப்பட்டுள்ளது */
+        #container { 
+            position: relative; 
+            width: 95%; 
+            margin: 0 auto; 
+            padding: 10px 0; /* padding அதிகரிக்கப்பட்டுள்ளது */
+        }
+        #ctrl { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 12px; /* இடைவெளியை 12px ஆக அதிகரித்தல் (முன்பு 8px) */
+        }
+        .controls-row { 
+            display: flex; 
+            justify-content: center; 
+            width: 100%; 
+            gap: 18px; /* இடைவெளியை 18px ஆக அதிகரித்தல் (முன்பு 10px) */
+        }
+        #counter { 
+            text-align: right; 
+            width: 90%; 
+            margin: 0 auto 10px; /* கீழ் விளிம்பை அதிகரிக்கவும் */
+            color: rgba(255, 255, 255, 0.7); 
+            font-weight: 500; 
+            font-size: 14px; 
+        }
+        
+        /* ஹெட்டர் ஸ்டைல் */
+        #header-title { display: flex; align-items: center; justify-content: center; padding: 15px 0; margin-bottom: 5px;}
+        #header-title h1 { color: #ffffff; margin-left: 10px; font-size: 26px; }
+        #logo { border-radius: 5px; }
+
+        /* 2. Textarea ஸ்டைல் */
+        textarea { 
+            width: 90%; 
+            height: 160px; /* உயரத்தை சற்றே அதிகரித்தல் */
+            margin: 10px auto 5px; 
+            display: block; 
+            padding: 20px; /* padding-ஐ அதிகரித்தல் */
+            font-size: 17px; 
+            background-color: rgba(255, 255, 255, 0.05); 
+            color: #ffffff; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            outline: none; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.6); 
+            resize: none; 
+        }
+        textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        /* 3. Select Box & Custom Input ஸ்டைல் */
+        select, input[type="text"] { 
+            -webkit-appearance: none; 
+            background: rgba(255, 255, 255, 0.1); 
+            color: #ffffffff; 
+            text-align-last: center; 
+            height: 50px; /* உயரம் அதிகரிப்பு */
+            width: 100%; 
+            font-size: 16px; 
+            font-weight: 600; 
+            border-radius: 10px; 
+            padding: 12px; 
+            margin: 0; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* Custom Voice பிரிவுக்கான ஸ்டைல் */
+        #customVoiceSection { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            width: 100%; 
+            margin: 0; 
+            gap: 12px; /* இடைவெளியை அதிகரித்தல் */
+        }
+        #customVoiceInput { 
+            width: 70%; /* Input Field-ன் அகலத்தை சரிசெய்தல் */
+            text-align: left; 
+            padding-left: 15px;
+        }
+        #customVoiceInput:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+        }
+
+        /* 4. பொத்தான் ஸ்டைல் */
+        button { 
+            background-color: rgba(255, 255, 255, 0.1); 
+            padding: 10px 20px; /* padding-ஐ அதிகரித்தல் */
+            color: #ffffff; 
+            border: none; 
+            font-size: 18px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); 
+            flex-grow: 1; 
+        }
+        button:hover:not(:disabled) { 
+            background-color: #007bff; 
+            box-shadow: 0 0 10px #007bff, 0 0 20px #007bff, 0 6px 10px rgba(0, 0, 0, 0.5); 
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        /* Custom Voice பட்டன் ஸ்டைல் */
+        #useCustomVoiceButton { 
+            width: 30%; /* அகலத்தை சரிசெய்தல் */
+            height: 50px; /* உயரம் சரிசெய்தல் */
+            font-size: 14px; 
+            padding: 0;
+        }
+
+        /* 5. ஆடியோ ப்ளேயர் ஸ்டைல் */
+        #audioPlayer { 
+            width: 95%; 
+            margin: 20px auto; 
+            display: none; 
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body class="main">
+    <div id="header">
+        <div id="header-title">
+            <img id="logo" src="logo.png" alt="logo" width="40px" aria-hidden="true" />
+            <h1>ANBU TTS</h1>
+        </div>
+    </div>
+    
+    <textarea id="textInput" placeholder="Enter your text here..."></textarea>
+    
+    <div id="counter">0/10000</div> 
+    
+    <div id="container">
+        <div id="ctrl">
+            <select id="voiceSelection">
+                <option value="zZruxT34wOCwRrqvb99N">Anbu (newscrick)</option>
+                <option value="Nzx4EODwcRtz5xESEixO">sara (female)</option>
+                <option value="MP7UPhn7eVWqCGJGIh6Q">jeevan (male)</option>
+                <option value="R23cI2hqxAhT17IXmY7O">Clyde (male)</option>
+                <option value="XSQQLeoHwWnBv8tjJ1T7">Paul (male)</option>
+                <option value="iwRzSAbd1d305sh0TAAy">Domi (female)</option>
+                <option value="apOzcbHULxCnvWfHPd41">Dave (male)</option>
+                <option value="D38z5RcWu1voky8WS1ja">Fin (male)</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">Sarah (female)</option>
+                <option value="ErXwobaYiN019PkySvjV">Antoni (male)</option>
+            </select>
+            
+            <div id="customVoiceSection">
+                <input type="text" id="customVoiceInput" placeholder="Enter Custom Voice ID here...">
+                <button id="useCustomVoiceButton">
+                    <i class="fa fa-user-circle" aria-hidden="true"></i> Custom
+                </button>
+            </div>
+
+            <div class="controls-row">
+                <button id="convertButton"><i class="fa fa-play" aria-hidden="true"></i> Convert & Play</button> 
+                <button id="downloadButton"><i class="fa fa-download" aria-hidden="true"></i> Download</button>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audioPlayer" controls></audio> 
+    
+    <iframe aria-hidden="true" id="frame" style="display: none;"></iframe> 
+    
+    <script>
+        // குளோபல் மாறிகள்
+        const maxChar = 10000;
+        let audioData = null; 
+        let isCustomVoiceEnabled = false; 
+
+        // DOM உறுப்புகள்
+        const textInput = document.getElementById('textInput');
+        const voiceSelection = document.getElementById('voiceSelection');
+        const customVoiceInput = document.getElementById('customVoiceInput'); 
+        const useCustomVoiceButton = document.getElementById('useCustomVoiceButton'); 
+        const convertButton = document.getElementById('convertButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const counter = document.getElementById('counter');
+        
+        // API முகவரி (Proxy)
+        const ttsUrl = 'https://ubsa.in/smartprogrammers/public/eleven.php'; 
+        
+        // --- ஆரம்ப அமைப்புகள் ---
+        voiceSelection.disabled = false;
+        customVoiceInput.disabled = true;
+        
+        // 1. Custom Voice Toggle செயல்பாடு
+        useCustomVoiceButton.addEventListener('click', () => {
+            isCustomVoiceEnabled = !isCustomVoiceEnabled; 
+            
+            if (isCustomVoiceEnabled) {
+                // Custom Voice-ஐ இயக்கும்போது
+                voiceSelection.disabled = true; 
+                customVoiceInput.disabled = false;
+                customVoiceInput.focus();
+                useCustomVoiceButton.style.backgroundColor = '#007bff'; 
+                useCustomVoiceButton.innerHTML = "<i class='fa fa-check-circle' aria-hidden='true'></i> Custom ON";
+                Swal.fire({title: 'Custom Voice Enabled!', text: 'Enter your Voice ID (e.g., ID_XXXX) and click Convert.', icon: 'info', confirmButtonText: 'OK'});
+            } else {
+                // Custom Voice-ஐ முடக்கும்போது
+                voiceSelection.disabled = false; 
+                customVoiceInput.disabled = true;
+                useCustomVoiceButton.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'; 
+                useCustomVoiceButton.innerHTML = "<i class='fa fa-user-circle' aria-hidden='true'></i> Custom";
+                Swal.fire({title: 'Custom Voice Disabled!', text: 'Using selected voice from the list.', icon: 'info', confirmButtonText: 'OK'});
+            }
+        });
+
+        // 2. TTS செயல்பாடு (Convert & Play)
+        convertButton.addEventListener('click', async () => {
+            const text = textInput.value;
+            let voice; 
+
+            // Character Limit & Short Text சோதனை
+            if (text.length > maxChar) {
+                Swal.fire("Oops!", `Your text exceeds the maximum character limit which is ${maxChar}`, "error");
+                return;
+            } else if (text.length < 2) {
+                Swal.fire("Oops!", "Your text is too short!", "error");
+                return;
+            }
+            
+            // Voice ID-ஐத் தீர்மானித்தல்
+            if (isCustomVoiceEnabled) {
+                voice = customVoiceInput.value.trim();
+                if (!voice) {
+                    Swal.fire("Oops!", "Please enter a Custom Voice ID.", "error");
+                    return;
+                }
+            } else {
+                voice = voiceSelection.value;
+            }
+
+
+            // UI லோடிங் நிலை
+            convertButton.innerHTML = "<i class='fa fa-spinner fa-spin' aria-hidden='true'></i> Wait...";
+            convertButton.disabled = true;
+            audioPlayer.style.display = 'none'; 
+
+            const formData = new FormData();
+            formData.append("text", text);
+            formData.append("voice", voice); 
+            formData.append("key", "wqpwgoGhADAwIdb1JRNTAEBgg="); 
+            
+            try {
+                const response = await fetch(ttsUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
+                    } catch {
+                        throw new Error(`HTTP error! status: ${response.status}. Response: ${errorText.substring(0, 100)}...`);
+                    }
+                }
+
+                const data = await response.arrayBuffer();
+                audioData = new Blob([data], { type: 'audio/mpeg' });
+                
+                audioPlayer.src = URL.createObjectURL(audioData);
+                audioPlayer.style.display = 'block'; 
+                audioPlayer.play();
+                
+            } catch (error) {
+                Swal.fire("Oops!", `Error during conversion: ${error.message}`, "error");
+                audioPlayer.src = ''; 
+            } finally {
+                convertButton.innerHTML = "<i class='fa fa-play' aria-hidden='true'></i> Convert & Play";
+                convertButton.disabled = false;
+            }
+        });
+
+        // 3. பதிவிறக்க செயல்பாடு (Download)
+        downloadButton.addEventListener('click', () => {
+            if (!audioData) {
+                Swal.fire("Sorry :(", "No audio available for download. Please convert and play first.", "error");
+                return;
+            }
+
+            try {
+                const downloadUrl = URL.createObjectURL(audioData);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                
+                const voiceUsed = isCustomVoiceEnabled ? 'CustomVoice' : voiceSelection.options[voiceSelection.selectedIndex].text.split(' ')[0];
+                a.download = `ANBU_TTS_${voiceUsed}_${new Date().getTime()}.mp3`; 
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+
+            } catch (error) {
+                Swal.fire("Oops!", `Download Error: ${error.message}`, "error");
+            }
+        });
+
+        // 4. எழுத்து கவுண்டரை புதுப்பித்தல்
+        textInput.addEventListener('input', () => {
+            counter.textContent = `${textInput.value.length}/${maxChar}`;
+        });
+        
+        // ஆரம்பத்தில் கவுண்டரைப் புதுப்பித்தல்
+        textInput.dispatchEvent(new Event('input')); 
+    </script>
+</body>
+</html>
